@@ -65,6 +65,8 @@ def set_password(username)
   con = get_connection()
   #inserts the username and hash into the table
   con.exec "INSERT INTO hashes VALUES ('#{username}', '#{password_hash}')"
+  puts "User created successfully, please log in"
+  existing_user()
 end 
 
 #simply returns a hash of the passed in value
@@ -120,13 +122,13 @@ def existing_user
 	puts "Password incorrect, please try again"
 	if attempts == 3
           puts "Max attempts reached, exiting program"
-	end
+        end
       end
-    else
-      puts "User not found"
     end
+  else
+    puts "User not found"
+  end
 end
-
 
 def get_connection
   password = 'password'
