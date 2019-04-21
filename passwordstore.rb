@@ -1,12 +1,12 @@
 #!/usr/bin/ruby
 
-
 require 'pg'
 require 'digest'
 require_relative 'pw.rb'
 password = $pass
 
-
+#lets the user choose if they are a new or existing user
+#until is used so when the function is complete the program will exit
 def menu_select()
   puts "Select an option:"
   puts "1. New User"
@@ -24,7 +24,7 @@ def menu_select()
   end 
 end
 
-
+#start of the user creation process
 def create_user
   print "Please enter your desired username: "
   username = gets.chomp
@@ -43,7 +43,7 @@ def create_user
   end  
 end
 
-
+#creates a hash of the users password and inserts into the database
 def set_password(username)
   #just set to random letter so they are not equal
   user_pw = 'i'
@@ -59,18 +59,20 @@ def set_password(username)
       puts "Passwords did not match"
     end
   end
+  #creates a hash using the entered password
   password_hash = create_hash(user_pw)
+  #creates connection
   con = get_connection()
   #inserts the username and hash into the table
   con.exec "INSERT INTO hashes VALUES ('#{username}', '#{password_hash}')"
 end 
 
-
+#simply returns a hash of the passed in value
 def create_hash(user_pw)
   return Digest::SHA1.hexdigest(user_pw)
 end
 
-
+#queries the database for users and returns an array of users
 def get_users
   username_array = []
   con = get_connection()
@@ -81,21 +83,25 @@ def get_users
   return username_array
 end
 
-
+#gets the has for a particular username
 def get_hash(username)
+  #creates connection
   con = get_connection()
   #gets the password hash for the passed in username
   hashes = con.exec "SELECT hash FROM hashes WHERE username = '#{username}'"
+  #similar to before when building the username array, will find a better way to do this as a loop isn't necessary
   hashes.each do |hash|
     return hash['hash']
   end
 end
 
-
+#runs when the user selects existing user
 def existing_user
   print "Please enter username: "
   username = gets.chomp
+  #gets the array of users
   users = get_users
+  #checks if the entered username is in the array
   if users.include?(username)
     attempts = 0
     until attempts == 3
@@ -112,10 +118,12 @@ def existing_user
 	exit
       else
 	puts "Password incorrect, please try again"
+	if attempts == 3
+          puts "Max attempts reached, exiting program"
+	end
       end
-    end
-    puts "Max attempts reached, exiting program"
-    exit
+    else
+      puts "User not found"
     end
 end
 
